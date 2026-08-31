@@ -198,6 +198,7 @@ namespace BookingSystem.Infrastructure.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SlotId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -257,9 +258,9 @@ namespace BookingSystem.Infrastructure.Data.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_SlotId",
+                name: "IX_Bookings_SlotId_Date",
                 table: "Bookings",
-                column: "SlotId",
+                columns: new[] { "SlotId", "Date" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

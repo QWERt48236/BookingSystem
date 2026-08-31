@@ -9,5 +9,5 @@ public class Slot
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
 
-    public Booking? Booking { get; set; }
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

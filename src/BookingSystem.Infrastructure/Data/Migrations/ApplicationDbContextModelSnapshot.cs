@@ -33,6 +33,9 @@ namespace BookingSystem.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
                     b.Property<int>("SlotId")
                         .HasColumnType("int");
 
@@ -42,10 +45,10 @@ namespace BookingSystem.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SlotId")
-                        .IsUnique();
-
                     b.HasIndex("UserId");
+
+                    b.HasIndex("SlotId", "Date")
+                        .IsUnique();
 
                     b.ToTable("Bookings");
                 });
@@ -292,8 +295,8 @@ namespace BookingSystem.Infrastructure.Data.Migrations
             modelBuilder.Entity("BookingSystem.Domain.Entities.Booking", b =>
                 {
                     b.HasOne("BookingSystem.Domain.Entities.Slot", "Slot")
-                        .WithOne("Booking")
-                        .HasForeignKey("BookingSystem.Domain.Entities.Booking", "SlotId")
+                        .WithMany("Bookings")
+                        .HasForeignKey("SlotId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -375,7 +378,7 @@ namespace BookingSystem.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("BookingSystem.Domain.Entities.Slot", b =>
                 {
-                    b.Navigation("Booking");
+                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }

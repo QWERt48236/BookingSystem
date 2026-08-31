@@ -28,9 +28,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<Booking>()
             .HasOne(b => b.Slot)
-            .WithOne(s => s.Booking)
-            .HasForeignKey<Booking>(b => b.SlotId)
+            .WithMany(s => s.Bookings)
+            .HasForeignKey(b => b.SlotId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Booking>()
+            .HasIndex(b => new { b.SlotId, b.Date })
+            .IsUnique();
 
         builder.Entity<Slot>()
             .HasOne(s => s.Resource)
