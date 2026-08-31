@@ -1,7 +1,9 @@
 using System.Text;
 using BookingSystem.Application.Authentication;
+using BookingSystem.Application.Resources;
 using BookingSystem.Infrastructure.Data;
 using BookingSystem.Infrastructure.Identity;
+using BookingSystem.Infrastructure.Resources;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +27,8 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IResourceRepository, ResourceRepository>();
+        services.AddScoped<IResourceService, ResourceService>();
 
         var jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>() ?? new JwtSettings();
 
