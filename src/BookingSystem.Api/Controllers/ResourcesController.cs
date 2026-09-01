@@ -1,3 +1,4 @@
+using BookingSystem.Api.Common;
 using BookingSystem.Api.Contracts.Resources;
 using BookingSystem.Application.Resources;
 using BookingSystem.Domain.Constants;
@@ -23,39 +24,41 @@ public class ResourcesController(IResourceService resourceService) : ControllerB
     [Authorize]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var resource = await resourceService.GetByIdAsync(id, cancellationToken);
-        if (resource is null)
-        {
-            return NotFound();
-        }
+        var result = await resourceService.GetByIdAsync(id, cancellationToken);
 
-        var slots = resource.Slots.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime));
-        return Ok(new ResourceDetailResponse(resource.Id, resource.Name, slots));
+        return this.ToActionResult(result, resource =>
+        {
+            var slots = resource.Slots.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime));
+            return Ok(new ResourceDetailResponse(resource.Id, resource.Name, slots));
+        });
     }
 
     [HttpPost]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Create(ResourceRequest request, CancellationToken cancellationToken)
     {
-        var created = await resourceService.CreateAsync(new Resource { Name = request.Name }, cancellationToken);
-        var response = new ResourceResponse(created.Id, created.Name);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, response);
+        var result = await resourceService.CreateAsync(new Resource { Name = request.Name }, cancellationToken);
+
+        return this.ToActionResult(result, created =>
+            CreatedAtAction(nameof(GetById), new { id = created.Id }, new ResourceResponse(created.Id, created.Name)));
     }
 
     [HttpPut("{id:int}")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Update(int id, ResourceRequest request, CancellationToken cancellationToken)
     {
-        var updated = await resourceService.UpdateAsync(new Resource { Id = id, Name = request.Name }, cancellationToken);
-        return updated ? NoContent() : NotFound();
+        var result = await resourceService.UpdateAsync(new Resource { Id = id, Name = request.Name }, cancellationToken);
+
+        return this.ToActionResult(result);
     }
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        var deleted = await resourceService.DeleteAsync(id, cancellationToken);
-        return deleted ? NoContent() : NotFound();
+        var result = await resourceService.DeleteAsync(id, cancellationToken);
+
+        return this.ToActionResult(result);
     }
 
     [HttpPost("{id:int}/slots")]
@@ -64,17 +67,8 @@ public class ResourcesController(IResourceService resourceService) : ControllerB
     {
         var slots = request.Select(s => new Slot { StartTime = s.StartTime, EndTime = s.EndTime });
         var result = await resourceService.AddSlotsAsync(id, slots, cancellationToken);
-        if (result.ResourceNotFound)
-        {
-            return NotFound();
-        }
 
-        if (!result.Succeeded)
-        {
-            return BadRequest(result.Errors);
-        }
-
-        var response = result.Slots.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime));
-        return CreatedAtAction(nameof(GetById), new { id }, response);
+        return this.ToActionResult(result, created =>
+            CreatedAtAction(nameof(GetById), new { id }, created.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime))));
     }
 }

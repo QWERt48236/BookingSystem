@@ -1,5 +1,7 @@
+using BookingSystem.Application.Common;
 using BookingSystem.Application.Resources;
 using BookingSystem.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookingSystem.Infrastructure.Resources;
 
@@ -11,34 +13,53 @@ public class ResourceService(IResourceRepository resourceRepository) : IResource
     public Task<IEnumerable<Resource>> GetAllAsync(CancellationToken cancellationToken = default) =>
         resourceRepository.GetAllAsync(cancellationToken);
 
-    public Task<Resource?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
-        resourceRepository.GetByIdAsync(id, cancellationToken);
+    public async Task<Result<Resource>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var resource = await resourceRepository.GetByIdAsync(id, cancellationToken);
+        return resource is null ? Result<Resource>.NotFound() : Result<Resource>.Success(resource);
+    }
 
-    public Task<Resource> CreateAsync(Resource resource, CancellationToken cancellationToken = default) =>
-        resourceRepository.CreateAsync(resource, cancellationToken);
+    public async Task<Result<Resource>> CreateAsync(Resource resource, CancellationToken cancellationToken = default)
+    {
+        var created = await resourceRepository.CreateAsync(resource, cancellationToken);
+        return Result<Resource>.Success(created);
+    }
 
-    public Task<bool> UpdateAsync(Resource resource, CancellationToken cancellationToken = default) =>
-        resourceRepository.UpdateAsync(resource, cancellationToken);
+    public async Task<Result> UpdateAsync(Resource resource, CancellationToken cancellationToken = default)
+    {
+        var updated = await resourceRepository.UpdateAsync(resource, cancellationToken);
+        return updated ? Result.Success() : Result.NotFound();
+    }
 
-    public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default) =>
-        resourceRepository.DeleteAsync(id, cancellationToken);
+    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var deleted = await resourceRepository.DeleteAsync(id, cancellationToken);
+            return deleted ? Result.Success() : Result.NotFound();
+        }
+        catch (DbUpdateException)
+        {
+            return Result.Conflict("Cannot delete a resource that still has slots.");
+        }
+    }
 
-    public async Task<AddSlotsResult> AddSlotsAsync(int resourceId, IEnumerable<Slot> slots, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<Slot>>> AddSlotsAsync(int resourceId, IEnumerable<Slot> slots, CancellationToken cancellationToken = default)
     {
         var slotList = slots.ToList();
         var errors = ValidateSlots(slotList);
         if (errors.Count > 0)
         {
-            return AddSlotsResult.Failure(errors);
+            return Result<IEnumerable<Slot>>.Validation(errors);
         }
 
         if (!await resourceRepository.ExistsAsync(resourceId, cancellationToken))
         {
-            return AddSlotsResult.NotFound();
+            return Result<IEnumerable<Slot>>.NotFound();
         }
 
         var created = await resourceRepository.AddSlotsAsync(resourceId, slotList, cancellationToken);
-        return AddSlotsResult.Success(created);
+        return Result<IEnumerable<Slot>>.Success(created);
     }
 
     private static List<string> ValidateSlots(IEnumerable<Slot> slots)

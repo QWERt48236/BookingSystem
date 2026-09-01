@@ -1,3 +1,4 @@
+using BookingSystem.Api.Common;
 using BookingSystem.Api.Contracts.Auth;
 using BookingSystem.Application.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.RegisterAsync(request.Email, request.Password);
 
-        return result.Succeeded ? Ok() : BadRequest(result.Errors);
+        return this.ToActionResult(result);
     }
 
     [HttpPost("login")]
@@ -21,6 +22,6 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.LoginAsync(request.Email, request.Password);
 
-        return result.Succeeded ? Ok(new AuthResponse(result.Token!)) : Unauthorized(result.Errors);
+        return this.ToActionResult(result, token => Ok(new AuthResponse(token)));
     }
 }
