@@ -1,6 +1,8 @@
 using System.Text;
 using BookingSystem.Application.Authentication;
+using BookingSystem.Application.Bookings;
 using BookingSystem.Application.Resources;
+using BookingSystem.Infrastructure.Bookings;
 using BookingSystem.Infrastructure.Data;
 using BookingSystem.Infrastructure.Identity;
 using BookingSystem.Infrastructure.Resources;
@@ -29,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IResourceRepository, ResourceRepository>();
         services.AddScoped<IResourceService, ResourceService>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IBookingService, BookingService>();
 
         var jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>() ?? new JwtSettings();
 
