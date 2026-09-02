@@ -1,0 +1,24 @@
+<div class="screen">
+  <div class="page-head">
+    <div>
+      <h1>Meeting rooms</h1>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p style="opacity: 0.6; font-size: 14px">Loading…</p>
+  } @else if (resources().length === 0) {
+    <p style="opacity: 0.6; font-size: 14px">No rooms yet.</p>
+  } @else {
+    <div class="grid-3">
+      @for (r of resources(); track r.id) {
+        <div class="card blueprint elev-sm">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div class="card-kicker">Resource #{{ r.id }}</div>
+          <div class="card-title">{{ r.name }}</div>
+          <button class="btn btn-secondary btn-block" disabled title="Coming soon">View &amp; book</button>
+        </div>
+      }
+    </div>
+  }
+</div>

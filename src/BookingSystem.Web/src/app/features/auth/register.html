@@ -1,0 +1,41 @@
+<div class="auth-wrap">
+  <div class="card blueprint elev-sm" style="padding: var(--space-6)">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="card-kicker">Create account</div>
+    <h1 style="font-size: 22px; margin: 0 0 var(--space-3)">Get booking</h1>
+
+    @if (regError()) {
+      <div
+        class="tag tag-neutral"
+        style="background: color-mix(in srgb, #b23b3b 15%, transparent); color: #8a2f2f; display: block; padding: 8px 10px; margin-bottom: var(--space-2)"
+      >
+        <svg lucideAlertTriangle [size]="14" style="vertical-align: -3px; margin-right: 6px"></svg>
+        400 — {{ regErrorText() }}
+      </div>
+    }
+
+    <div class="field" style="margin-bottom: var(--space-3)">
+      <label>Email</label>
+      <input class="input" type="email" placeholder="you@company.com" [(ngModel)]="email" name="email" />
+    </div>
+    <div class="field" style="margin-bottom: var(--space-3)">
+      <label>Password</label>
+      <input class="input" type="password" placeholder="min. 8 characters" [(ngModel)]="password" name="password" />
+    </div>
+    <div class="field" style="margin-bottom: var(--space-2)">
+      <label>Confirm password</label>
+      <input
+        class="input"
+        type="password"
+        placeholder="repeat password"
+        [(ngModel)]="confirmPassword"
+        name="confirmPassword"
+        (keyup.enter)="submit()"
+      />
+    </div>
+    <button class="btn btn-primary btn-block" (click)="submit()">Create account</button>
+    <p style="text-align: center; font-size: 13px; margin-top: var(--space-3)">
+      Already have one? <a class="navlink" style="color: var(--color-accent-700)" routerLink="/login">Log in</a>
+    </p>
+  </div>
+</div>

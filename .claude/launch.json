@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "BookingSystem.Web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "--prefix", "src/BookingSystem.Web"],
+      "port": 4200
+    }
+  ]
+}

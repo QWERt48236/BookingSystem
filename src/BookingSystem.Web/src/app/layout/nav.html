@@ -1,0 +1,16 @@
+<nav class="nav blueprint" style="margin: 0; border-left: none; border-right: none; border-top: none">
+  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+  <div class="nav-brand">
+    <svg
+      lucideCalendarCheck2
+      [size]="18"
+      style="vertical-align: -3px; margin-right: 6px; color: var(--color-accent)"
+    ></svg>
+    RoomBook
+  </div>
+  <span class="tag tag-outline" style="margin-left: var(--space-4)">{{ roleLabel() }}</span>
+  <button class="btn btn-secondary" (click)="logout()" style="margin-left: var(--space-2)">
+    <svg lucideLogOut [size]="15"></svg>
+    Log out
+  </button>
+</nav>
