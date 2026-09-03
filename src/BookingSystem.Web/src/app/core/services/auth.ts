@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, Injector, computed, inject, signal } from '@angular/core';
 import { tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
+import { ResourceHubService } from './resource-hub';
 
 const TOKEN_KEY = 'bookingSystem.token';
 const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
@@ -39,6 +40,10 @@ function rolesFromPayload(payload: JwtPayload | null): string[] {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly tokenSignal = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+  // Resolved lazily (only inside logout, never at construction) so this
+  // doesn't form a constructor-time circular dependency with ResourceHubService,
+  // which injects AuthService itself.
+  private readonly injector = inject(Injector);
 
   readonly isAuthenticated = computed(() => this.tokenSignal() !== null);
   readonly roles = computed(() => rolesFromPayload(this.currentPayload()));
@@ -71,5 +76,6 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
     this.tokenSignal.set(null);
+    void this.injector.get(ResourceHubService).disconnect();
   }
 }
