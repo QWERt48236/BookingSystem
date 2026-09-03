@@ -7,6 +7,7 @@ using BookingSystem.Infrastructure.Data;
 using BookingSystem.Infrastructure.Identity;
 using BookingSystem.Infrastructure.Resources;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -61,6 +62,21 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
                     ValidateLifetime = true
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            context.HttpContext.Request.Path.StartsWithSegments(BookingHubRoutes.HubPath))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

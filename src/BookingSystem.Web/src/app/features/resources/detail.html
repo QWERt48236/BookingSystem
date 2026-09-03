@@ -62,10 +62,23 @@
         </label>
         <div class="slot-grid" style="margin-bottom: var(--space-4)">
           @for (s of resource()!.slots; track s.id) {
-            <label class="radio" style="border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 10px 12px">
-              <input type="radio" name="slot" [checked]="s.id === selectedSlotId" (change)="selectSlot(s.id)" />
+            <label
+              class="radio"
+              [class.disabled]="s.isBooked"
+              style="border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 10px 12px"
+            >
+              <input
+                type="radio"
+                name="slot"
+                [disabled]="s.isBooked"
+                [checked]="s.id === selectedSlotId"
+                (change)="selectSlot(s.id)"
+              />
               <span class="dot"></span>
               <span>{{ slotLabel(s) }}</span>
+              @if (s.isBooked) {
+                <span class="tag tag-neutral" style="margin-left: 6px">Booked</span>
+              }
             </label>
           }
         </div>

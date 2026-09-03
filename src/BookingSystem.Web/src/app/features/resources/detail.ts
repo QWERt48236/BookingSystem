@@ -1,11 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideAlertTriangle, LucideArrowLeft, LucideCalendarPlus, LucideCheckCircle2 } from '@lucide/angular';
+import { Subscription } from 'rxjs';
 import { BookingService } from '../../core/services/booking';
 import { ResourceService } from '../../core/services/resource';
-import { ResourceDetailResponse, SlotResponse } from '../../core/models/resource.model';
+import { ResourceHubService } from '../../core/services/resource-hub';
+import { ResourceDetailResponse, SlotBookedEvent, SlotResponse } from '../../core/models/resource.model';
 import { extractErrorMessage } from '../../core/utils/http-error';
 
 function todayIso(): string {
@@ -23,10 +25,11 @@ function timeLabel(start: string, end: string): string {
   imports: [FormsModule, RouterLink, LucideAlertTriangle, LucideArrowLeft, LucideCalendarPlus, LucideCheckCircle2],
   templateUrl: './detail.html',
 })
-export class Detail {
+export class Detail implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly resourceService = inject(ResourceService);
   private readonly bookingService = inject(BookingService);
+  private readonly resourceHub = inject(ResourceHubService);
 
   protected readonly resource = signal<ResourceDetailResponse | null>(null);
   protected readonly loading = signal(true);
@@ -41,16 +44,31 @@ export class Detail {
   protected readonly bookingError = signal(false);
   protected readonly bookingErrorText = signal('');
 
+  private resourceId!: number;
+  private readonly subscription = new Subscription();
+
   constructor() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.resourceService.getById(id).subscribe({
-      next: (resource) => {
-        this.resource.set(resource);
-        this.selectedSlotId = resource.slots[0]?.id ?? null;
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.subscription.add(this.route.paramMap.subscribe((params) => this.onRouteParamsChanged(Number(params.get('id')))));
+    this.subscription.add(this.resourceHub.slotBooked.subscribe((event) => this.onSlotBooked(event)));
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+    void this.resourceHub.leaveCurrentGroup();
+  }
+
+  private onRouteParamsChanged(newResourceId: number): void {
+    if (this.resourceId === newResourceId) {
+      return;
+    }
+
+    void this.resourceHub.leaveCurrentGroup();
+    this.resourceId = newResourceId;
+    this.bookingConfirmed.set(false);
+    this.bookingError.set(false);
+    this.selectedSlotId = null;
+    this.loadResource();
+    void this.resourceHub.joinResourceGroup(this.resourceId);
   }
 
   protected slotLabel(slot: SlotResponse): string {
@@ -65,6 +83,7 @@ export class Detail {
   protected onDateChange(): void {
     this.bookingError.set(false);
     this.bookingConfirmed.set(false);
+    this.loadResource();
   }
 
   protected submitBooking(): void {
@@ -88,5 +107,37 @@ export class Detail {
         this.bookingErrorText.set(extractErrorMessage(err, 'Something went wrong — please try again.'));
       },
     });
+  }
+
+  private loadResource(): void {
+    this.loading.set(true);
+    this.resourceService.getById(this.resourceId, this.selectedDate).subscribe({
+      next: (resource) => {
+        this.resource.set(resource);
+        this.selectedSlotId = resource.slots.find((s) => !s.isBooked)?.id ?? resource.slots[0]?.id ?? null;
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  private onSlotBooked(event: SlotBookedEvent): void {
+    if (event.resourceId !== this.resourceId || event.date !== this.selectedDate) {
+      return;
+    }
+
+    const current = this.resource();
+    if (!current) {
+      return;
+    }
+
+    this.resource.set({
+      ...current,
+      slots: current.slots.map((s) => (s.id === event.slotId ? { ...s, isBooked: true } : s)),
+    });
+
+    if (this.selectedSlotId === event.slotId) {
+      this.selectedSlotId = current.slots.find((s) => s.id !== event.slotId && !s.isBooked)?.id ?? null;
+    }
   }
 }

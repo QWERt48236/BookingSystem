@@ -20,6 +20,9 @@ public class BookingRepository(ApplicationDbContext dbContext) : IBookingReposit
     public async Task<IEnumerable<Booking>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default) =>
         await dbContext.Bookings.AsNoTracking().Where(b => b.UserId == userId).ToListAsync(cancellationToken);
 
-    public async Task<bool> SlotExistsAsync(int slotId, CancellationToken cancellationToken = default) =>
-        await dbContext.Slots.AnyAsync(s => s.Id == slotId, cancellationToken);
+    public async Task<int?> GetSlotResourceIdAsync(int slotId, CancellationToken cancellationToken = default) =>
+        await dbContext.Slots
+            .Where(s => s.Id == slotId)
+            .Select(s => (int?)s.ResourceId)
+            .FirstOrDefaultAsync(cancellationToken);
 }

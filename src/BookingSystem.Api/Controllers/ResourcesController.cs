@@ -22,13 +22,20 @@ public class ResourcesController(IResourceService resourceService) : ControllerB
 
     [HttpGet("{id:int}")]
     [Authorize]
-    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetById(int id, [FromQuery] DateOnly? date, CancellationToken cancellationToken)
     {
         var result = await resourceService.GetByIdAsync(id, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return this.ToActionResult(result);
+        }
+
+        var effectiveDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var bookedSlotIds = await resourceService.GetBookedSlotIdsAsync(id, effectiveDate, cancellationToken);
 
         return this.ToActionResult(result, resource =>
         {
-            var slots = resource.Slots.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime));
+            var slots = resource.Slots.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime, bookedSlotIds.Contains(s.Id)));
             return Ok(new ResourceDetailResponse(resource.Id, resource.Name, slots));
         });
     }
@@ -69,6 +76,6 @@ public class ResourcesController(IResourceService resourceService) : ControllerB
         var result = await resourceService.AddSlotsAsync(id, slots, cancellationToken);
 
         return this.ToActionResult(result, created =>
-            CreatedAtAction(nameof(GetById), new { id }, created.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime))));
+            CreatedAtAction(nameof(GetById), new { id }, created.Select(s => new SlotResponse(s.Id, s.StartTime, s.EndTime, false))));
     }
 }

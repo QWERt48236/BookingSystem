@@ -11,4 +11,5 @@ public interface IResourceRepository
     Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Slot>> AddSlotsAsync(int resourceId, IEnumerable<Slot> slots, CancellationToken cancellationToken = default);
+    Task<IReadOnlySet<int>> GetBookedSlotIdsAsync(int resourceId, DateOnly date, CancellationToken cancellationToken = default);
 }

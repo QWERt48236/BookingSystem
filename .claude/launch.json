@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "start", "--prefix", "src/BookingSystem.Web"],
       "port": 4200
+    },
+    {
+      "name": "BookingSystem.Api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/BookingSystem.Api"],
+      "port": 5099
     }
   ]
 }

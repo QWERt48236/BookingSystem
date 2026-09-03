@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import {
@@ -17,8 +17,12 @@ export class ResourceService {
     return this.http.get<ResourceResponse[]>(`${environment.apiUrl}/resources`);
   }
 
-  getById(id: number) {
-    return this.http.get<ResourceDetailResponse>(`${environment.apiUrl}/resources/${id}`);
+  getById(id: number, date?: string) {
+    let params = new HttpParams();
+    if (date) {
+      params = params.set('date', date);
+    }
+    return this.http.get<ResourceDetailResponse>(`${environment.apiUrl}/resources/${id}`, { params });
   }
 
   create(request: ResourceRequest) {

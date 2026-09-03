@@ -7,6 +7,7 @@ export interface SlotResponse {
   id: number;
   startTime: string;
   endTime: string;
+  isBooked: boolean;
 }
 
 export interface ResourceDetailResponse {
@@ -22,4 +23,11 @@ export interface ResourceRequest {
 export interface SlotRequest {
   startTime: string;
   endTime: string;
+}
+
+export interface SlotBookedEvent {
+  resourceId: number;
+  slotId: number;
+  date: string;
+  bookingId: number;
 }

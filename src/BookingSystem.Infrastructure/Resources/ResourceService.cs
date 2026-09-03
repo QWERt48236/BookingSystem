@@ -62,6 +62,9 @@ public class ResourceService(IResourceRepository resourceRepository) : IResource
         return Result<IEnumerable<Slot>>.Success(created);
     }
 
+    public Task<IReadOnlySet<int>> GetBookedSlotIdsAsync(int resourceId, DateOnly date, CancellationToken cancellationToken = default) =>
+        resourceRepository.GetBookedSlotIdsAsync(resourceId, date, cancellationToken);
+
     private static List<string> ValidateSlots(IEnumerable<Slot> slots)
     {
         var errors = new List<string>();

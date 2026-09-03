@@ -64,4 +64,14 @@ public class ResourceRepository(ApplicationDbContext dbContext) : IResourceRepos
         await dbContext.SaveChangesAsync(cancellationToken);
         return slotList;
     }
+
+    public async Task<IReadOnlySet<int>> GetBookedSlotIdsAsync(int resourceId, DateOnly date, CancellationToken cancellationToken = default)
+    {
+        var slotIds = await dbContext.Bookings
+            .Where(b => b.Date == date && b.Slot.ResourceId == resourceId)
+            .Select(b => b.SlotId)
+            .ToListAsync(cancellationToken);
+
+        return slotIds.ToHashSet();
+    }
 }

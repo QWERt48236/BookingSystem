@@ -1,4 +1,6 @@
 using BookingSystem.Api.Common;
+using BookingSystem.Api.Hubs;
+using BookingSystem.Application.Bookings;
 using BookingSystem.Infrastructure;
 using BookingSystem.Infrastructure.Data;
 using BookingSystem.Infrastructure.Identity;
@@ -10,13 +12,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IBookingNotifier, SignalRBookingNotifier>();
 
 const string AngularDevCorsPolicy = "AngularDev";
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddCors(options =>
         options.AddPolicy(AngularDevCorsPolicy, policy =>
-            policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
+            policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 }
 
 var app = builder.Build();
@@ -45,6 +49,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<BookingsHub>(BookingHubRoutes.HubPath);
 
 app.Run();
 
