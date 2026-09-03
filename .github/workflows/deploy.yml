@@ -18,6 +18,14 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install matching npm version
+        run: npm install -g npm@11.5.2
+
       - name: Publish backend
         run: dotnet publish src/BookingSystem.Api -c Release -o ./publish
 
