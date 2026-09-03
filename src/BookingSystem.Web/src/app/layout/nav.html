@@ -12,6 +12,7 @@
   <a class="navlink" routerLink="/bookings/mine" routerLinkActive="active" ariaCurrentWhenActive="page">My Bookings</a>
   @if (isAdmin()) {
     <a class="navlink" routerLink="/admin" routerLinkActive="active" ariaCurrentWhenActive="page">Admin</a>
+    <a class="navlink" routerLink="/admin/bookings" routerLinkActive="active" ariaCurrentWhenActive="page">All Bookings</a>
   }
   <span class="tag tag-outline" style="margin-left: var(--space-4)">{{ roleLabel() }}</span>
   <button class="btn btn-secondary" (click)="logout()" style="margin-left: var(--space-2)">

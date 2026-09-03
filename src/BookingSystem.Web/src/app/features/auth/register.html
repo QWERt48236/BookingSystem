@@ -33,6 +33,10 @@
         (keyup.enter)="submit()"
       />
     </div>
+    <div class="field" style="margin-bottom: var(--space-3); display: flex; align-items: center; gap: 8px">
+      <input type="checkbox" id="isAdmin" [(ngModel)]="isAdmin" name="isAdmin" style="width: auto" />
+      <label for="isAdmin" style="margin: 0">Register as admin</label>
+    </div>
     <button class="btn btn-primary btn-block" (click)="submit()">Create account</button>
     <p style="text-align: center; font-size: 13px; margin-top: var(--space-3)">
       Already have one? <a class="navlink" style="color: var(--color-accent-700)" routerLink="/login">Log in</a>

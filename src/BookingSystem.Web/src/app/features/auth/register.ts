@@ -17,6 +17,7 @@ export class Register {
   protected email = '';
   protected password = '';
   protected confirmPassword = '';
+  protected isAdmin = false;
   protected readonly regError = signal(false);
   protected readonly regErrorText = signal('');
 
@@ -30,7 +31,7 @@ export class Register {
       return;
     }
 
-    this.auth.register({ email: this.email, password: this.password }).subscribe({
+    this.auth.register({ email: this.email, password: this.password, isAdmin: this.isAdmin }).subscribe({
       next: () => {
         this.regError.set(false);
         this.router.navigate(['/login']);

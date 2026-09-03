@@ -1,0 +1,52 @@
+<div class="screen">
+  <div class="page-head">
+    <div>
+      <h1>All bookings</h1>
+      <p style="margin: 2px 0 0; opacity: 0.7; font-size: 13px">Admin — bookings across all users</p>
+    </div>
+  </div>
+
+  @if (loadError()) {
+    <div
+      class="tag tag-neutral"
+      style="background: color-mix(in srgb, #b23b3b 15%, transparent); color: #8a2f2f; display: block; padding: 8px 10px; margin-bottom: var(--space-3)"
+    >
+      {{ loadError() }}
+    </div>
+  } @else if (loading()) {
+    <p style="opacity: 0.6; font-size: 14px">Loading…</p>
+  } @else if (rows().length === 0) {
+    <p style="opacity: 0.6; font-size: 14px">No bookings yet.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>User</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of rows(); track b.id) {
+          <tr>
+            <td>{{ b.resourceName }}</td>
+            <td>{{ b.date }}</td>
+            <td>{{ b.timeLabel }}</td>
+            <td style="opacity: 0.7; font-size: 13px">{{ b.userLabel }}</td>
+            <td style="opacity: 0.6">{{ b.createdAt }}</td>
+            <td><span class="tag tag-accent">#{{ b.id }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div style="display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-3)">
+      <button class="btn btn-secondary" [disabled]="page() === 1" (click)="previousPage()">Previous</button>
+      <span style="align-self: center; font-size: 13px; opacity: 0.7">Page {{ page() }}</span>
+      <button class="btn btn-secondary" [disabled]="!hasNextPage()" (click)="nextPage()">Next</button>
+    </div>
+  }
+</div>

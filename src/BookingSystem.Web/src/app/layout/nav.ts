@@ -12,8 +12,8 @@ export class Nav {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected readonly roleLabel = () => (this.auth.role() === 'Admin' ? 'Admin' : 'User');
-  protected readonly isAdmin = () => this.auth.role() === 'Admin';
+  protected readonly roleLabel = () => (this.auth.isAdmin() ? 'Admin' : 'User');
+  protected readonly isAdmin = () => this.auth.isAdmin();
 
   protected logout(): void {
     this.auth.logout();

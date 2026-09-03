@@ -12,7 +12,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var result = await authService.RegisterAsync(request.Email, request.Password);
+        var result = await authService.RegisterAsync(request.Email, request.Password, request.IsAdmin);
 
         return this.ToActionResult(result);
     }

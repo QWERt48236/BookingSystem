@@ -10,7 +10,7 @@ public class AuthService(
     SignInManager<ApplicationUser> signInManager,
     IJwtTokenService jwtTokenService) : IAuthService
 {
-    public async Task<Result> RegisterAsync(string email, string password)
+    public async Task<Result> RegisterAsync(string email, string password, bool isAdmin)
     {
         var user = new ApplicationUser
         {
@@ -24,7 +24,22 @@ public class AuthService(
             return Result.Validation(createResult.Errors.Select(e => e.Description));
         }
 
-        await userManager.AddToRoleAsync(user, Roles.User);
+        var userRoleResult = await userManager.AddToRoleAsync(user, Roles.User);
+        if (!userRoleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return Result.Failure(userRoleResult.Errors.Select(e => e.Description).ToArray());
+        }
+
+        if (isAdmin)
+        {
+            var adminRoleResult = await userManager.AddToRoleAsync(user, Roles.Admin);
+            if (!adminRoleResult.Succeeded)
+            {
+                await userManager.DeleteAsync(user);
+                return Result.Failure(adminRoleResult.Errors.Select(e => e.Description).ToArray());
+            }
+        }
 
         return Result.Success();
     }

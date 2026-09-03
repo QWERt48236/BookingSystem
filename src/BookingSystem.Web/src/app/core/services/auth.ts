@@ -28,12 +28,12 @@ function decodeJwt(token: string): JwtPayload | null {
   }
 }
 
-function roleFromPayload(payload: JwtPayload | null): string | null {
+function rolesFromPayload(payload: JwtPayload | null): string[] {
   const raw = payload?.[ROLE_CLAIM] ?? payload?.role;
   if (!raw) {
-    return null;
+    return [];
   }
-  return Array.isArray(raw) ? raw[0] : raw;
+  return Array.isArray(raw) ? raw : [raw];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -41,7 +41,8 @@ export class AuthService {
   private readonly tokenSignal = signal<string | null>(localStorage.getItem(TOKEN_KEY));
 
   readonly isAuthenticated = computed(() => this.tokenSignal() !== null);
-  readonly role = computed(() => roleFromPayload(this.currentPayload()));
+  readonly roles = computed(() => rolesFromPayload(this.currentPayload()));
+  readonly isAdmin = computed(() => this.roles().includes('Admin'));
 
   private readonly currentPayload = computed(() => {
     const token = this.tokenSignal();

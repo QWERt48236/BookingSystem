@@ -58,4 +58,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingNotifi
 
     public Task<IEnumerable<Booking>> GetMyBookingsAsync(string userId, CancellationToken cancellationToken = default) =>
         bookingRepository.GetByUserIdAsync(userId, cancellationToken);
+
+    public Task<IEnumerable<AdminBookingSummary>> GetAllBookingsAsync(int page, int pageSize, CancellationToken cancellationToken = default) =>
+        bookingRepository.GetAllAsync(page, pageSize, cancellationToken);
 }

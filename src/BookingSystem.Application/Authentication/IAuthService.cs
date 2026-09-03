@@ -4,6 +4,6 @@ namespace BookingSystem.Application.Authentication;
 
 public interface IAuthService
 {
-    Task<Result> RegisterAsync(string email, string password);
+    Task<Result> RegisterAsync(string email, string password, bool isAdmin);
     Task<Result<string>> LoginAsync(string email, string password);
 }

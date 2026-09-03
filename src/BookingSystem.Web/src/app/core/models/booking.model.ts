@@ -10,3 +10,15 @@ export interface BookingResponse {
   date: string;
   createdAt: string;
 }
+
+export interface AdminBookingResponse {
+  id: number;
+  slotId: number;
+  resourceName: string;
+  slotStartTime: string;
+  slotEndTime: string;
+  userId: string;
+  userEmail: string | null;
+  date: string;
+  createdAt: string;
+}

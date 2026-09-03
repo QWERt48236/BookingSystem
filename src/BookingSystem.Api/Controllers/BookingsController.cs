@@ -37,8 +37,22 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         return Ok(bookings.Select(ToResponse));
     }
 
+    [HttpGet]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 50, CancellationToken cancellationToken = default)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 200);
+
+        var bookings = await bookingService.GetAllBookingsAsync(page, pageSize, cancellationToken);
+        return Ok(bookings.Select(ToAdminResponse));
+    }
+
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     private static BookingResponse ToResponse(Domain.Entities.Booking booking) =>
         new(booking.Id, booking.SlotId, booking.UserId, booking.Date, booking.CreatedAt);
+
+    private static AdminBookingResponse ToAdminResponse(AdminBookingSummary summary) =>
+        new(summary.Id, summary.SlotId, summary.ResourceName, summary.SlotStartTime, summary.SlotEndTime, summary.UserId, summary.UserEmail, summary.Date, summary.CreatedAt);
 }
