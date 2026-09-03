@@ -96,7 +96,7 @@
 
       <button
         class="btn btn-primary"
-        [disabled]="resource()!.slots.length === 0 || booking()"
+        [disabled]="selectedSlotId === null || booking()"
         (click)="submitBooking()"
       >
         <svg lucideCalendarPlus [size]="15"></svg>

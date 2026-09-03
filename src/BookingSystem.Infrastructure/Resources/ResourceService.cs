@@ -53,9 +53,16 @@ public class ResourceService(IResourceRepository resourceRepository) : IResource
             return Result<IEnumerable<Slot>>.Validation(errors);
         }
 
-        if (!await resourceRepository.ExistsAsync(resourceId, cancellationToken))
+        var resource = await resourceRepository.GetByIdAsync(resourceId, cancellationToken);
+        if (resource is null)
         {
             return Result<IEnumerable<Slot>>.NotFound();
+        }
+
+        var overlapErrors = ValidateNoOverlaps(slotList, resource.Slots);
+        if (overlapErrors.Count > 0)
+        {
+            return Result<IEnumerable<Slot>>.Validation(overlapErrors);
         }
 
         var created = await resourceRepository.AddSlotsAsync(resourceId, slotList, cancellationToken);
@@ -85,4 +92,35 @@ public class ResourceService(IResourceRepository resourceRepository) : IResource
 
         return errors;
     }
+
+    private static List<string> ValidateNoOverlaps(IReadOnlyList<Slot> newSlots, IEnumerable<Slot> existingSlots)
+    {
+        var errors = new List<string>();
+        var existingList = existingSlots.ToList();
+
+        for (var i = 0; i < newSlots.Count; i++)
+        {
+            var slot = newSlots[i];
+
+            for (var j = i + 1; j < newSlots.Count; j++)
+            {
+                if (Overlaps(slot, newSlots[j]))
+                {
+                    errors.Add($"Slot {slot.StartTime}-{slot.EndTime} overlaps with slot {newSlots[j].StartTime}-{newSlots[j].EndTime}.");
+                }
+            }
+
+            foreach (var existing in existingList)
+            {
+                if (Overlaps(slot, existing))
+                {
+                    errors.Add($"Slot {slot.StartTime}-{slot.EndTime} overlaps with existing slot {existing.StartTime}-{existing.EndTime}.");
+                }
+            }
+        }
+
+        return errors;
+    }
+
+    private static bool Overlaps(Slot a, Slot b) => a.StartTime < b.EndTime && b.StartTime < a.EndTime;
 }

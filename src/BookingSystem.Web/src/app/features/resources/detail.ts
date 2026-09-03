@@ -93,6 +93,10 @@ export class Detail implements OnDestroy {
     }
 
     const slot = resource.slots.find((s) => s.id === this.selectedSlotId);
+    if (!slot || slot.isBooked) {
+      return;
+    }
+
     this.booking.set(true);
     this.bookingService.create({ slotId: this.selectedSlotId, date: this.selectedDate }).subscribe({
       next: () => {
@@ -114,7 +118,7 @@ export class Detail implements OnDestroy {
     this.resourceService.getById(this.resourceId, this.selectedDate).subscribe({
       next: (resource) => {
         this.resource.set(resource);
-        this.selectedSlotId = resource.slots.find((s) => !s.isBooked)?.id ?? resource.slots[0]?.id ?? null;
+        this.selectedSlotId = resource.slots.find((s) => !s.isBooked)?.id ?? null;
         this.loading.set(false);
       },
       error: () => this.loading.set(false),

@@ -49,9 +49,6 @@ public class ResourceRepository(ApplicationDbContext dbContext) : IResourceRepos
         return true;
     }
 
-    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default) =>
-        await dbContext.Resources.AnyAsync(r => r.Id == id, cancellationToken);
-
     public async Task<IEnumerable<Slot>> AddSlotsAsync(int resourceId, IEnumerable<Slot> slots, CancellationToken cancellationToken = default)
     {
         var slotList = slots.ToList();
