@@ -13,6 +13,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.29.0" />
     <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
   </ItemGroup>
@@ -21,5 +22,36 @@
     <ProjectReference Include="..\BookingSystem.Application\BookingSystem.Application.csproj" />
     <ProjectReference Include="..\BookingSystem.Infrastructure\BookingSystem.Infrastructure.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <AngularWebProjectDir>$(MSBuildProjectDirectory)\..\BookingSystem.Web</AngularWebProjectDir>
+    <AngularBuildOutputDir>$(AngularWebProjectDir)\dist\BookingSystem.Web\browser</AngularBuildOutputDir>
+  </PropertyGroup>
+
+  <Target Name="BuildAngularApp" BeforeTargets="ComputeFilesToPublish" Condition="'$(Configuration)' == 'Release'">
+    <Message Importance="high" Text="Building Angular app in $(AngularWebProjectDir)..." />
+    <Exec Command="npm ci" WorkingDirectory="$(AngularWebProjectDir)" Condition="!Exists('$(AngularWebProjectDir)\node_modules')" />
+    <Exec Command="npm run build" WorkingDirectory="$(AngularWebProjectDir)" />
+  </Target>
+
+  <!-- Static web assets are normally discovered from wwwroot during Build, which already runs
+       before ComputeFilesToPublish — so files only copied into wwwroot at this point would be
+       missed by that mechanism. Adding them directly to ResolvedFileToPublish here (right after
+       ComputeFilesToPublish, still before Publish's own copy step) guarantees they land in the
+       publish output regardless of that timing. -->
+  <Target Name="AddAngularAppToPublish" AfterTargets="ComputeFilesToPublish;BuildAngularApp" Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <AngularDistFiles Include="$(AngularBuildOutputDir)\**" />
+    </ItemGroup>
+    <Error Condition="!Exists('$(AngularBuildOutputDir)')" Text="Angular build output not found at $(AngularBuildOutputDir). Did the Angular build fail?" />
+    <RemoveDir Directories="$(MSBuildProjectDirectory)\wwwroot" Condition="Exists('$(MSBuildProjectDirectory)\wwwroot')" />
+    <Copy SourceFiles="@(AngularDistFiles)" DestinationFolder="$(MSBuildProjectDirectory)\wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(AngularDistFiles)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 
 </Project>

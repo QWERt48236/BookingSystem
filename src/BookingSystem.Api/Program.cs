@@ -12,7 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddSignalR();
+
+var azureSignalRConnectionString = builder.Configuration["Azure:SignalR:ConnectionString"];
+var signalRBuilder = builder.Services.AddSignalR();
+if (!string.IsNullOrEmpty(azureSignalRConnectionString))
+{
+    signalRBuilder.AddAzureSignalR(azureSignalRConnectionString);
+}
+
 builder.Services.AddScoped<IBookingNotifier, SignalRBookingNotifier>();
 
 const string AngularDevCorsPolicy = "AngularDev";
@@ -45,11 +52,24 @@ else
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<BookingsHub>(BookingHubRoutes.HubPath);
+
+if (!app.Environment.IsDevelopment())
+{
+    // More specific than the catch-all fallback below, so these always win routing precedence
+    // for any /api or /hubs request that isn't matched by a real controller action or the hub -
+    // otherwise MapFallbackToFile would silently serve index.html for a missing API route.
+    app.Map("/api/{**catchAll}", () => Results.NotFound());
+    app.Map("/hubs/{**catchAll}", () => Results.NotFound());
+
+    app.MapFallbackToFile("index.html");
+}
 
 app.Run();
 

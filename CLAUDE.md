@@ -82,3 +82,11 @@ dotnet test tests/BookingSystem.Tests
 ## Git workflow
 
 Never commit without explicit user confirmation — see `.claude/commands/commit.md` for the `/commit` command, which drafts a commit message but never runs `git commit` itself.
+
+## Development process notes
+
+This project was built collaboratively with Claude Code. A few decisions worth recording as decided, not open questions:
+
+- **Concurrency control**: a unique `(SlotId, Date)` index on `Bookings`, not pessimistic locking or optimistic-concurrency versioning — see the Concurrency section in `README.md` for the full reasoning. Verified against a real SQL Server via Testcontainers, since EF Core's InMemory provider doesn't enforce unique constraints and would let the check-then-act antipattern slip through.
+- **Result pattern over exceptions**: every `Application`-layer service method returns `Result`/`Result<T>` (`Common/Result.cs`) instead of throwing for expected failure cases (not found, conflict, validation, unauthorized), so `ResultExtensions.ToActionResult` in the API layer is the single place that maps domain outcomes to HTTP status codes.
+- **`.claude/commands/commit.md`**: a project-scoped `/commit` slash command that drafts commit messages without ever running `git commit` itself, keeping commit authorship under explicit user control.
