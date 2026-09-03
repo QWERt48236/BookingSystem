@@ -16,6 +16,8 @@ public class BookingConcurrencyTests(BookingApiFactory factory) : IClassFixture<
     private record AuthResponse(string Token);
     private record BookingRequest(int SlotId, DateOnly Date);
 
+    private const int ConcurrentRequestCount = 10;
+
     [Fact]
     public async Task ConcurrentBookings_ForSameSlotAndDate_OnlyOneSucceeds()
     {
@@ -23,22 +25,43 @@ public class BookingConcurrencyTests(BookingApiFactory factory) : IClassFixture<
         var token = await RegisterAndLoginAsync();
         var date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
 
-        using var clientA = CreateAuthenticatedClient(token);
-        using var clientB = CreateAuthenticatedClient(token);
+        var clients = Enumerable.Range(0, ConcurrentRequestCount)
+            .Select(_ => CreateAuthenticatedClient(token))
+            .ToArray();
+        try
+        {
+            // A shared gate + a thread per request (instead of just awaiting fire-and-forget
+            // Tasks) forces every request to reach SaveChangesAsync at roughly the same instant,
+            // so the test actually exercises the unique-index race guard instead of relying on
+            // requests happening to overlap on the async I/O scheduler.
+            using var gate = new ManualResetEventSlim(false);
+            var responseTasks = clients.Select(client => Task.Run(async () =>
+            {
+                gate.Wait();
+                return await client.PostAsJsonAsync("/api/bookings", new BookingRequest(slotId, date));
+            })).ToArray();
 
-        var requestA = clientA.PostAsJsonAsync("/api/bookings", new BookingRequest(slotId, date));
-        var requestB = clientB.PostAsJsonAsync("/api/bookings", new BookingRequest(slotId, date));
+            gate.Set();
+            var responses = await Task.WhenAll(responseTasks);
+            var statusCodes = responses.Select(r => r.StatusCode).ToArray();
 
-        var responses = await Task.WhenAll(requestA, requestB);
-        var statusCodes = responses.Select(r => r.StatusCode).ToArray();
+            statusCodes.Should().OnlyContain(sc => sc == HttpStatusCode.Created || sc == HttpStatusCode.Conflict);
+            statusCodes.Should().ContainSingle(sc => sc == HttpStatusCode.Created);
+            statusCodes.Should().Contain(HttpStatusCode.Conflict);
 
-        statusCodes.Should().Contain(HttpStatusCode.Created).And.Contain(HttpStatusCode.Conflict);
+            await using var scope = factory.Services.CreateAsyncScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var bookingCount = await dbContext.Bookings.CountAsync(b => b.SlotId == slotId && b.Date == date);
 
-        await using var scope = factory.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var bookingCount = await dbContext.Bookings.CountAsync(b => b.SlotId == slotId && b.Date == date);
-
-        bookingCount.Should().Be(1);
+            bookingCount.Should().Be(1);
+        }
+        finally
+        {
+            foreach (var client in clients)
+            {
+                client.Dispose();
+            }
+        }
     }
 
     private async Task<int> SeedSlotAsync()
