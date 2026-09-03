@@ -1,0 +1,17 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { BookingRequest, BookingResponse } from '../models/booking.model';
+
+@Injectable({ providedIn: 'root' })
+export class BookingService {
+  constructor(private readonly http: HttpClient) {}
+
+  create(request: BookingRequest) {
+    return this.http.post<BookingResponse>(`${environment.apiUrl}/bookings`, request);
+  }
+
+  getMine() {
+    return this.http.get<BookingResponse[]>(`${environment.apiUrl}/bookings/mine`);
+  }
+}

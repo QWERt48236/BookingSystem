@@ -1,10 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ResourceService } from '../../core/services/resource';
 import { ResourceResponse } from '../../core/models/resource.model';
 
 @Component({
   selector: 'app-browse',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './browse.html',
 })
 export class Browse {

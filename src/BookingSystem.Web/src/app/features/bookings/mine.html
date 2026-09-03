@@ -1,0 +1,38 @@
+<div class="screen">
+  <div class="page-head">
+    <div>
+      <h1>My bookings</h1>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p style="opacity: 0.6; font-size: 14px">Loading…</p>
+  } @else if (rows().length === 0) {
+    <p style="opacity: 0.6; font-size: 14px">
+      No bookings yet. <a class="navlink" style="color: var(--color-accent-700)" routerLink="/">Browse rooms</a> to make one.
+    </p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of rows(); track b.id) {
+          <tr>
+            <td>{{ b.resourceName }}</td>
+            <td>{{ b.date }}</td>
+            <td>{{ b.timeLabel }}</td>
+            <td style="opacity: 0.6">{{ b.createdAt }}</td>
+            <td><span class="tag tag-accent">#{{ b.id }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

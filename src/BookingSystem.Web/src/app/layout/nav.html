@@ -8,6 +8,11 @@
     ></svg>
     RoomBook
   </div>
+  <a class="navlink" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">Browse</a>
+  <a class="navlink" routerLink="/bookings/mine" routerLinkActive="active" ariaCurrentWhenActive="page">My Bookings</a>
+  @if (isAdmin()) {
+    <a class="navlink" routerLink="/admin" routerLinkActive="active" ariaCurrentWhenActive="page">Admin</a>
+  }
   <span class="tag tag-outline" style="margin-left: var(--space-4)">{{ roleLabel() }}</span>
   <button class="btn btn-secondary" (click)="logout()" style="margin-left: var(--space-2)">
     <svg lucideLogOut [size]="15"></svg>

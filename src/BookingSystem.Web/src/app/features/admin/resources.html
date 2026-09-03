@@ -1,0 +1,145 @@
+<div class="screen">
+  <div class="page-head">
+    <div>
+      <h1>Resources</h1>
+      <p style="margin: 2px 0 0; opacity: 0.7; font-size: 13px">Admin — manage rooms &amp; slots</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddDialog()">
+      <svg lucidePlus [size]="15"></svg>
+      Add resource
+    </button>
+  </div>
+
+  @if (listError()) {
+    <div
+      class="tag tag-neutral"
+      style="background: color-mix(in srgb, #b23b3b 15%, transparent); color: #8a2f2f; display: block; padding: 8px 10px; margin-bottom: var(--space-3)"
+    >
+      <svg lucideAlertTriangle [size]="14" style="vertical-align: -3px; margin-right: 6px"></svg>
+      {{ listError() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <p style="opacity: 0.6; font-size: 14px">Loading…</p>
+  } @else if (resources().length === 0) {
+    <p style="opacity: 0.6; font-size: 14px">No resources yet.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of resources(); track r.id) {
+          <tr>
+            <td>{{ r.name }}</td>
+            <td style="text-align: right">
+              <button class="btn btn-icon btn-ghost" title="Edit" (click)="openEditDialog(r)">
+                <svg lucidePencil [size]="15"></svg>
+              </button>
+              <button class="btn btn-icon btn-ghost" title="Delete" (click)="deleteResource(r)">
+                <svg lucideTrash2 [size]="15"></svg>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (addDialogOpen()) {
+  <div class="dialog-backdrop" (click)="closeAddDialog()">
+    <div class="dialog blueprint" (click)="$event.stopPropagation()">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div class="dialog-title">New resource</div>
+      @if (addError()) {
+        <div
+          class="tag tag-neutral"
+          style="background: color-mix(in srgb, #b23b3b 15%, transparent); color: #8a2f2f; display: block; padding: 8px 10px"
+        >
+          {{ addError() }}
+        </div>
+      }
+      <div class="field">
+        <label>Name</label>
+        <input class="input" placeholder="e.g. Falcon" [(ngModel)]="newResourceName" name="newResourceName" (keyup.enter)="confirmAddResource()" />
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" (click)="closeAddDialog()">Cancel</button>
+        <button class="btn btn-primary" (click)="confirmAddResource()">Create</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (editDialogOpen()) {
+  <div class="dialog-backdrop" (click)="closeEditDialog()">
+    <div class="dialog blueprint" (click)="$event.stopPropagation()">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      @if (!editTarget()) {
+        <p style="opacity: 0.6; font-size: 14px">Loading…</p>
+      } @else {
+        <div class="dialog-title">Edit resource</div>
+        @if (editError()) {
+          <div
+            class="tag tag-neutral"
+            style="background: color-mix(in srgb, #b23b3b 15%, transparent); color: #8a2f2f; display: block; padding: 8px 10px"
+          >
+            {{ editError() }}
+          </div>
+        }
+        <div class="field">
+          <label>Name</label>
+          <input class="input" [(ngModel)]="editName" name="editName" />
+        </div>
+        <div class="dialog-actions" style="margin-top: 0">
+          <button class="btn btn-primary" (click)="saveName()">Save name</button>
+        </div>
+
+        <div style="border-top: 1px solid var(--color-divider); margin-top: var(--space-2); padding-top: var(--space-3)">
+          <label style="display: block; font-size: 12px; margin-bottom: 8px; color: color-mix(in srgb, var(--color-text) 70%, transparent)">
+            Time slots
+          </label>
+          @if (editTarget()!.slots.length === 0) {
+            <p style="opacity: 0.6; font-size: 13px; margin-bottom: var(--space-3)">No slots yet.</p>
+          } @else {
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--space-3)">
+              @for (s of editTarget()!.slots; track s.id) {
+                <span class="tag tag-outline">{{ slotLabel(s.startTime, s.endTime) }}</span>
+              }
+            </div>
+          }
+
+          @if (slotError()) {
+            <div
+              class="tag tag-neutral"
+              style="background: color-mix(in srgb, #b23b3b 15%, transparent); color: #8a2f2f; display: block; padding: 8px 10px; margin-bottom: var(--space-2)"
+            >
+              {{ slotError() }}
+            </div>
+          }
+
+          <div style="display: flex; gap: var(--space-2); align-items: flex-end">
+            <div class="field" style="flex: 1">
+              <label>Start</label>
+              <input class="input" type="time" [(ngModel)]="newSlotStart" name="newSlotStart" />
+            </div>
+            <div class="field" style="flex: 1">
+              <label>End</label>
+              <input class="input" type="time" [(ngModel)]="newSlotEnd" name="newSlotEnd" />
+            </div>
+            <button class="btn btn-secondary" (click)="addSlot()">Add slot</button>
+          </div>
+        </div>
+
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" (click)="closeEditDialog()">Close</button>
+        </div>
+      }
+    </div>
+  </div>
+}

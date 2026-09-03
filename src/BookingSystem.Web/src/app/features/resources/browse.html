@@ -16,7 +16,7 @@
           <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
           <div class="card-kicker">Resource #{{ r.id }}</div>
           <div class="card-title">{{ r.name }}</div>
-          <button class="btn btn-secondary btn-block" disabled title="Coming soon">View &amp; book</button>
+          <a class="btn btn-secondary btn-block" [routerLink]="['/resources', r.id]">View &amp; book</a>
         </div>
       }
     </div>

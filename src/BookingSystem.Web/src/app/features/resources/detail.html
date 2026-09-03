@@ -1,0 +1,94 @@
+@if (loading()) {
+  <div class="screen">
+    <p style="opacity: 0.6; font-size: 14px">Loading…</p>
+  </div>
+} @else if (!resource()) {
+  <div class="screen">
+    <p style="opacity: 0.6; font-size: 14px">Room not found.</p>
+  </div>
+} @else {
+  <div class="screen">
+    <a
+      class="navlink"
+      style="color: var(--color-accent-700); display: inline-flex; align-items: center; gap: 4px; margin-bottom: var(--space-4)"
+      routerLink="/"
+    >
+      <svg lucideArrowLeft [size]="16"></svg>
+      Back to rooms
+    </a>
+
+    <div class="page-head">
+      <div>
+        <h1>{{ resource()!.name }}</h1>
+      </div>
+      <span class="tag tag-accent">Resource #{{ resource()!.id }}</span>
+    </div>
+
+    @if (bookingConfirmed()) {
+      <div class="card blueprint elev-sm" style="margin-bottom: var(--space-4); border-color: var(--color-accent)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="card-kicker" style="display: flex; align-items: center; gap: 6px">
+          <svg lucideCheckCircle2 [size]="14"></svg>
+          Booking confirmed
+        </div>
+        <p class="card-body" style="opacity: 1">
+          Booked <strong>{{ resource()!.name }}</strong>, {{ confirmedSlotLabel() }} on {{ selectedDate }}.
+        </p>
+        <a class="btn btn-ghost" style="align-self: flex-start" routerLink="/bookings/mine">View my bookings →</a>
+      </div>
+    }
+
+    <div class="card blueprint elev-md" style="padding: var(--space-4)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div class="field" style="max-width: 220px; margin-bottom: var(--space-3)">
+        <label>Date</label>
+        <input
+          class="input"
+          type="date"
+          [(ngModel)]="selectedDate"
+          [min]="today"
+          (change)="onDateChange()"
+          name="date"
+        />
+      </div>
+
+      @if (resource()!.slots.length === 0) {
+        <p style="opacity: 0.6; font-size: 14px">No time slots configured for this room yet.</p>
+      } @else {
+        <label
+          style="display: block; font-size: 12px; margin-bottom: 8px; color: color-mix(in srgb, var(--color-text) 70%, transparent)"
+        >
+          Available slots
+        </label>
+        <div class="slot-grid" style="margin-bottom: var(--space-4)">
+          @for (s of resource()!.slots; track s.id) {
+            <label class="radio" style="border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 10px 12px">
+              <input type="radio" name="slot" [checked]="s.id === selectedSlotId" (change)="selectSlot(s.id)" />
+              <span class="dot"></span>
+              <span>{{ slotLabel(s) }}</span>
+            </label>
+          }
+        </div>
+      }
+
+      @if (bookingError()) {
+        <div
+          class="tag tag-neutral"
+          style="background: color-mix(in srgb, #b23b3b 15%, transparent); color: #8a2f2f; display: block; padding: 8px 10px; margin-bottom: var(--space-3)"
+        >
+          <svg lucideAlertTriangle [size]="14" style="vertical-align: -3px; margin-right: 6px"></svg>
+          {{ bookingErrorText() }}
+        </div>
+      }
+
+      <button
+        class="btn btn-primary"
+        [disabled]="resource()!.slots.length === 0 || booking()"
+        (click)="submitBooking()"
+      >
+        <svg lucideCalendarPlus [size]="15"></svg>
+        Book slot
+      </button>
+    </div>
+  </div>
+}

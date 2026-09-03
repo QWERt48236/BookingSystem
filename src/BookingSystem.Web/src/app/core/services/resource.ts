@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { ResourceResponse } from '../models/resource.model';
+import {
+  ResourceDetailResponse,
+  ResourceRequest,
+  ResourceResponse,
+  SlotRequest,
+  SlotResponse,
+} from '../models/resource.model';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceService {
@@ -9,5 +15,25 @@ export class ResourceService {
 
   getAll() {
     return this.http.get<ResourceResponse[]>(`${environment.apiUrl}/resources`);
+  }
+
+  getById(id: number) {
+    return this.http.get<ResourceDetailResponse>(`${environment.apiUrl}/resources/${id}`);
+  }
+
+  create(request: ResourceRequest) {
+    return this.http.post<ResourceResponse>(`${environment.apiUrl}/resources`, request);
+  }
+
+  update(id: number, request: ResourceRequest) {
+    return this.http.put<void>(`${environment.apiUrl}/resources/${id}`, request);
+  }
+
+  delete(id: number) {
+    return this.http.delete<void>(`${environment.apiUrl}/resources/${id}`);
+  }
+
+  addSlots(id: number, slots: SlotRequest[]) {
+    return this.http.post<SlotResponse[]>(`${environment.apiUrl}/resources/${id}/slots`, slots);
   }
 }
