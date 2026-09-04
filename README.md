@@ -77,3 +77,11 @@ Application settings required to reproduce on Azure:
 | `Jwt__Key` | Signing key for issued JWTs (min 32 bytes) |
 | `ConnectionStrings__DefaultConnection` | SQL Server connection string |
 | `Azure__SignalR__ConnectionString` | Optional — when set, SignalR runs against Azure SignalR Service instead of the in-process default (see `Program.cs`) |
+
+**Note:** the page may take a while to load (the Azure Web App wakes up from a cold start). If you hit a `503 Service Unavailable` error, this is temporary — wait a bit and reload the page.
+
+**Test admin account:**
+
+| Login | Password |
+|---|---|
+| `admin1234` | `2423tqetw35tw3t3D` |
