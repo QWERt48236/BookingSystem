@@ -68,7 +68,7 @@ This also drives how it's tested: EF Core's InMemory provider doesn't enforce re
 
 ## Deployment
 
-Live deployment: _TODO — add the Azure Web App URL here._
+Live deployment: https://booking-service-fyc9gdekekg7f9ez.canadacentral-01.azurewebsites.net
 
 Application settings required to reproduce on Azure:
 
